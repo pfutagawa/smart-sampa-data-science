@@ -2,6 +2,13 @@ name: build crime aggregates
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/build-crime-data.yml"
+      - "src/ingest_ssp_cellphones.py"
+      - "src/download_geosampa.py"
+      - "src/spatial_join_crimes.py"
+      - "requirements.txt"
   push:
     branches:
       - main
@@ -58,7 +65,18 @@ jobs:
               print(path, df.shape, int(df['subtracoes_total'].sum()))
           PY
 
+      - name: Upload aggregate preview
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: crime-aggregates-preview
+          path: |
+            data/processed/ssp_cellphones_by_subpref_month.csv
+            data/processed/ssp_cellphones_by_district_month.csv
+          retention-days: 7
+
       - name: Commit aggregated data
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

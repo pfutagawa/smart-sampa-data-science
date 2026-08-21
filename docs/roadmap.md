@@ -10,8 +10,9 @@
 - [x] Construir agregação mensal de roubos/furtos de celulares por subprefeitura e distrito.
 - [x] Medir e documentar cobertura da geocodificação.
 - [x] Preparar integração automática da criminalidade ao SQLite.
-- [ ] Versionar os agregados oficiais de 2025 no `main`.
-- [ ] Construir dataset analítico Smart Sampa × criminalidade por subprefeitura.
-- [ ] Produzir EDA comparativa e indicadores normalizados.
-- [ ] Construir mapa interativo estático para GitHub Pages.
-- [ ] Avaliar série histórica territorial de câmeras e necessidade de LAI.
+- [x] Versionar os agregados oficiais de 2025.
+- [x] Construir dataset analítico Smart Sampa × criminalidade por subprefeitura.
+- [x] Produzir EDA comparativa, testes de sensibilidade e indicadores normalizados.
+- [ ] Construir mapa interativo refinado para GitHub Pages.
+- [ ] Reconstruir série histórica territorial de câmeras e avaliar necessidade de LAI.
+- [ ] Com série de exposição suficiente, estimar painel longitudinal antes/depois sem confundir associação transversal com causalidade.

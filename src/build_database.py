@@ -19,6 +19,14 @@ PROCESSED = ROOT / "data" / "processed"
 DB = ROOT / "database" / "smart_sampa.sqlite"
 SCHEMA = ROOT / "database" / "schema.sql"
 
+# The camera/publication labels and GeoSampa administrative names are not
+# perfectly identical. Keep the small de-para explicit and auditable.
+SUBPREF_ALIASES = {
+    "CASA VERDE/CACHOEIRINHA": "CASA VERDE/LIMAO/CACHOEIRINHA",
+    "SAO MIGUEL": "SAO MIGUEL PAULISTA",
+    "PERUS": "PERUS/ANHANGUERA",
+}
+
 
 def read_csv(name: str) -> pd.DataFrame:
     return pd.read_csv(RAW / name)
@@ -32,7 +40,8 @@ def norm_geo_key(value: object) -> str:
         c for c in unicodedata.normalize("NFKD", text)
         if not unicodedata.combining(c)
     )
-    return re.sub(r"\s+", " ", text)
+    key = re.sub(r"\s+", " ", text)
+    return SUBPREF_ALIASES.get(key, key)
 
 
 def load_crime_aggregates(con: sqlite3.Connection, sub: pd.DataFrame) -> tuple[bool, bool]:

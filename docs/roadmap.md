@@ -4,16 +4,14 @@
 - [x] Integrar câmeras, população e área das 32 subprefeituras.
 - [x] Criar banco SQLite reproduzível.
 - [x] Adicionar consultas SQL de showcase.
-- [x] Criar análise exploratória inicial.
-- [x] Identificar URLs diretos e esquema dos microdados de celulares da SSP-SP.
-- [x] Implementar ETL com filtro do município, ano da ocorrência, versões de BO e deduplicação.
-- [x] Identificar camadas oficiais de subprefeituras e distritos no WFS do GeoSampa.
-- [x] Implementar download das geometrias e spatial join por coordenadas.
-- [x] Adicionar testes sintéticos do ETL e da agregação espacial.
-- [ ] Executar o pipeline completo com os XLSX oficiais da SSP-SP.
-- [ ] Medir cobertura de coordenadas e taxa de sucesso do spatial join.
-- [ ] Gerar agregados mensais oficiais de roubo/furto de celulares por subprefeitura e distrito.
-- [ ] Integrar os agregados de criminalidade ao SQLite.
-- [ ] Construir análise exploratória Smart Sampa × celulares subtraídos.
-- [ ] Construir mapa interativo para GitHub Pages.
+- [x] Criar análise exploratória inicial de câmeras.
+- [x] Validar microdados de celulares subtraídos da SSP-SP.
+- [x] Obter geometrias oficiais do GeoSampa via WFS.
+- [x] Construir agregação mensal de roubos/furtos de celulares por subprefeitura e distrito.
+- [x] Medir e documentar cobertura da geocodificação.
+- [x] Preparar integração automática da criminalidade ao SQLite.
+- [ ] Versionar os agregados oficiais de 2025 no `main`.
+- [ ] Construir dataset analítico Smart Sampa × criminalidade por subprefeitura.
+- [ ] Produzir EDA comparativa e indicadores normalizados.
+- [ ] Construir mapa interativo estático para GitHub Pages.
 - [ ] Avaliar série histórica territorial de câmeras e necessidade de LAI.

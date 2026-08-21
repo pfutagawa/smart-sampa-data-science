@@ -19,8 +19,10 @@ from __future__ import annotations
 
 import argparse
 import re
+import time
 import unicodedata
 from pathlib import Path
+from urllib.error import URLError
 from urllib.request import Request, urlopen
 
 import pandas as pd
@@ -66,22 +68,39 @@ def is_sao_paulo(value: object) -> bool:
     return norm_city(value) in {"SAOPAULO", "SPAULO"}
 
 
-def download_ssp(year: int, target_dir: Path) -> Path:
+def download_ssp(year: int, target_dir: Path, max_attempts: int = 4) -> Path:
+    """Baixa uma planilha da SSP com retry para resets transitórios do servidor."""
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / f"CelularesSubtraidos_{year}.xlsx"
     if target.exists() and target.stat().st_size > 0:
         return target
 
     url = SSP_URL.format(year=year)
-    print(f"Baixando SSP {year}: {url}")
     request = Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urlopen(request, timeout=180) as response, target.open("wb") as out:
-        while True:
-            chunk = response.read(1024 * 1024)
-            if not chunk:
+    last_error: Exception | None = None
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            print(f"Baixando SSP {year}: {url} (tentativa {attempt}/{max_attempts})")
+            with urlopen(request, timeout=180) as response, target.open("wb") as out:
+                while True:
+                    chunk = response.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    out.write(chunk)
+            if target.stat().st_size == 0:
+                raise OSError("Arquivo baixado vazio.")
+            return target
+        except (URLError, ConnectionResetError, TimeoutError, OSError) as exc:
+            last_error = exc
+            target.unlink(missing_ok=True)
+            if attempt == max_attempts:
                 break
-            out.write(chunk)
-    return target
+            wait_seconds = 5 * attempt
+            print(f"Falha transitória ao baixar SSP {year}: {exc}. Nova tentativa em {wait_seconds}s.")
+            time.sleep(wait_seconds)
+
+    raise RuntimeError(f"Não foi possível baixar SSP {year} após {max_attempts} tentativas") from last_error
 
 
 def registration_year_from_name(path: Path) -> int | None:
@@ -92,7 +111,14 @@ def registration_year_from_name(path: Path) -> int | None:
 def load_xlsx(path: Path) -> pd.DataFrame:
     year = registration_year_from_name(path)
     sheet = f"CELULAR_{year}" if year else 0
-    df = pd.read_excel(path, sheet_name=sheet, usecols=lambda c: str(c).upper() in USECOLS)
+    # Calamine reads large XLSX files substantially faster than openpyxl while
+    # preserving the same tabular values needed by this ETL.
+    df = pd.read_excel(
+        path,
+        sheet_name=sheet,
+        usecols=lambda c: str(c).upper() in USECOLS,
+        engine="calamine",
+    )
     df.columns = [str(c).strip().upper() for c in df.columns]
     missing = [c for c in USECOLS if c not in df.columns]
     if missing:

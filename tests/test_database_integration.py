@@ -16,11 +16,18 @@ def test_schema_and_geo_name_normalization():
     assert "crime_subpref_month" in objects
     assert "crime_district_month" in objects
     assert "vw_camera_crime_subpref_2025" in objects
+
     assert build_database.norm_geo_key("Sé") == "SE"
-    assert build_database.norm_geo_key("  M'Boi   Mirim ") == "M'BOI MIRIM"
-    assert build_database.norm_geo_key("Casa Verde/Cachoeirinha") == "CASA VERDE/LIMAO/CACHOEIRINHA"
-    assert build_database.norm_geo_key("São Miguel") == "SAO MIGUEL PAULISTA"
-    assert build_database.norm_geo_key("Perus") == "PERUS/ANHANGUERA"
+    assert build_database.norm_geo_key("ARICANDUVA-FORMOSA-CARRAO") == build_database.norm_geo_key("Aricanduva/Formosa/Carrão")
+    assert build_database.norm_geo_key("CASA VERDE-LIMAO-CACHOEIRINHA") == build_database.norm_geo_key("Casa Verde/Limão/Cachoeirinha")
+    assert build_database.norm_geo_key("M BOI MIRIM") == build_database.norm_geo_key("M'Boi Mirim")
+    assert build_database.norm_geo_key("FREGUESIA-BRASILANDIA") == build_database.norm_geo_key("Freguesia/Brasilândia")
+    assert build_database.norm_geo_key("JACANA-TREMEMBE") == build_database.norm_geo_key("Jaçanã/Tremembé")
+    assert build_database.norm_geo_key("PIRITUBA-JARAGUA") == build_database.norm_geo_key("Pirituba/Jaraguá")
+    assert build_database.norm_geo_key("SANTANA-TUCURUVI") == build_database.norm_geo_key("Santana/Tucuruvi")
+    assert build_database.norm_geo_key("VILA MARIA-VILA GUILHERME") == build_database.norm_geo_key("Vila Maria/Vila Guilherme")
+    assert build_database.norm_geo_key("PERUS-ANHANGUERA") == build_database.norm_geo_key("Perus/Anhanguera")
+    assert build_database.norm_geo_key("São Miguel") == build_database.norm_geo_key("São Miguel Paulista")
     con.close()
 
 

@@ -19,12 +19,13 @@ PROCESSED = ROOT / "data" / "processed"
 DB = ROOT / "database" / "smart_sampa.sqlite"
 SCHEMA = ROOT / "database" / "schema.sql"
 
-# The camera/publication labels and GeoSampa administrative names are not
-# perfectly identical. Keep the small de-para explicit and auditable.
+# GeoSampa and the camera/publication table use different punctuation in some
+# administrative names (e.g. hyphens versus slashes). Canonicalization removes
+# punctuation first; only genuine naming differences remain as explicit aliases.
 SUBPREF_ALIASES = {
-    "CASA VERDE/CACHOEIRINHA": "CASA VERDE/LIMAO/CACHOEIRINHA",
     "SAO MIGUEL": "SAO MIGUEL PAULISTA",
-    "PERUS": "PERUS/ANHANGUERA",
+    "CASA VERDE CACHOEIRINHA": "CASA VERDE LIMAO CACHOEIRINHA",
+    "PERUS": "PERUS ANHANGUERA",
 }
 
 
@@ -40,7 +41,8 @@ def norm_geo_key(value: object) -> str:
         c for c in unicodedata.normalize("NFKD", text)
         if not unicodedata.combining(c)
     )
-    key = re.sub(r"\s+", " ", text)
+    key = re.sub(r"[^A-Z0-9]+", " ", text)
+    key = re.sub(r"\s+", " ", key).strip()
     return SUBPREF_ALIASES.get(key, key)
 
 

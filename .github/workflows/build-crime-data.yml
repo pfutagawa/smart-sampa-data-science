@@ -2,6 +2,14 @@ name: build crime aggregates
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/build-crime-data.yml"
+      - "src/ingest_ssp_cellphones.py"
+      - "src/download_geosampa.py"
+      - "src/spatial_join_crimes.py"
+      - "src/build_database.py"
+      - "requirements.txt"
   push:
     branches:
       - main
@@ -45,26 +53,55 @@ jobs:
           import pandas as pd
           from pathlib import Path
 
-          files = [
-              Path('data/processed/ssp_cellphones_by_subpref_month.csv'),
-              Path('data/processed/ssp_cellphones_by_district_month.csv'),
-          ]
-          for path in files:
+          sub_path = Path('data/processed/ssp_cellphones_by_subpref_month.csv')
+          dist_path = Path('data/processed/ssp_cellphones_by_district_month.csv')
+          qa_path = Path('data/processed/ssp_geocoding_quality_month.csv')
+          for path in [sub_path, dist_path, qa_path]:
               if not path.exists():
                   raise SystemExit(f'Missing output: {path}')
-              df = pd.read_csv(path)
-              if df.empty:
+              if pd.read_csv(path).empty:
                   raise SystemExit(f'Empty output: {path}')
-              print(path, df.shape, int(df['subtracoes_total'].sum()))
+
+          sub = pd.read_csv(sub_path)
+          dist = pd.read_csv(dist_path)
+          qa = pd.read_csv(qa_path)
+          assigned_sub = int(qa['bos_atribuidos_subprefeitura'].sum())
+          assigned_dist = int(qa['bos_atribuidos_distrito'].sum())
+          eligible = int(qa['bos_elegiveis'].sum())
+          valid = int(qa['bos_coordenada_valida'].sum())
+
+          assert sub['subprefeitura_geosampa'].notna().all()
+          assert dist['distrito_geosampa'].notna().all()
+          assert int(sub['subtracoes_total'].sum()) == assigned_sub
+          assert int(dist['subtracoes_total'].sum()) == assigned_dist
+          assert assigned_sub <= valid <= eligible
+          assert assigned_dist <= valid <= eligible
+
+          print('subprefeituras', sub.shape, assigned_sub)
+          print('distritos', dist.shape, assigned_dist)
+          print('qualidade', qa.shape, {'elegiveis': eligible, 'coord_validas': valid})
           PY
 
+      - name: Upload aggregate preview
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: crime-aggregates-preview
+          path: |
+            data/processed/ssp_cellphones_by_subpref_month.csv
+            data/processed/ssp_cellphones_by_district_month.csv
+            data/processed/ssp_geocoding_quality_month.csv
+          retention-days: 7
+
       - name: Commit aggregated data
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- \
             data/processed/ssp_cellphones_by_subpref_month.csv \
-            data/processed/ssp_cellphones_by_district_month.csv
+            data/processed/ssp_cellphones_by_district_month.csv \
+            data/processed/ssp_geocoding_quality_month.csv
           if git diff --cached --quiet; then
             echo "No aggregate changes to commit."
           else

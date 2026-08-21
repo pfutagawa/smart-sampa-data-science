@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="430" viewBox="0 0 700 430">
+<rect width="100%" height="100%" fill="white"/>
+<line x1="75" y1="360" x2="675" y2="360" stroke="black"/>
+<line x1="75" y1="45" x2="75" y2="360" stroke="black"/>
+<text x="350" y="24" text-anchor="middle" font-family="sans-serif" font-size="16">BOs geocodificados por quartil de cobertura</text>
+<rect x="123" y="294.1" width="90" height="65.9" fill="none" stroke="black"/><text x="168" y="287.1" text-anchor="middle" font-family="sans-serif" font-size="11">485</text><text x="168" y="380" text-anchor="middle" font-family="sans-serif" font-size="11">Q1_menor</text>
+<rect x="261" y="273" width="90" height="87" fill="none" stroke="black"/><text x="306" y="266" text-anchor="middle" font-family="sans-serif" font-size="11">640</text><text x="306" y="380" text-anchor="middle" font-family="sans-serif" font-size="11">Q2</text>
+<rect x="399" y="256.1" width="90" height="103.9" fill="none" stroke="black"/><text x="444" y="249.1" text-anchor="middle" font-family="sans-serif" font-size="11">765</text><text x="444" y="380" text-anchor="middle" font-family="sans-serif" font-size="11">Q3</text>
+<rect x="537" y="86.1" width="90" height="273.9" fill="none" stroke="black"/><text x="582" y="79.1" text-anchor="middle" font-family="sans-serif" font-size="11">2015</text><text x="582" y="380" text-anchor="middle" font-family="sans-serif" font-size="11">Q4_maior</text>
+<text x="350" y="415" text-anchor="middle" font-family="sans-serif" font-size="10">Mediana de BOs geocodificados/100 mil hab.; comparação transversal.</text>
+</svg>

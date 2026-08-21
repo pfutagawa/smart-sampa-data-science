@@ -1,0 +1,33 @@
+﻿subprefeitura,regiao_administrativa,populacao_2022,area_km2,cameras_2025_09,cameras_por_10_mil_hab_pop2022,cameras_por_km2_area2025,celulares_subtraidos_geocod_2025,roubos_geocod_2025,furtos_geocod_2025,bo_rubrica_roubo_e_furto_2025,celulares_geocod_por_100_mil_pop2022,roubos_geocod_por_100_mil_pop2022,furtos_geocod_por_100_mil_pop2022,celulares_geocod_por_km2_area2025,rank_cameras_percap,rank_celulares_geocod_percap,quartil_cameras_percap,quadrante_mediana
+Pinheiros,Oeste,285815,32.0,5837,204.22,182.41,11840,3702,8142,4,4142.54,1295.24,2848.7,370.0,1,2,Q4_maior,mais_cameras_mais_bos
+Vila Mariana,Sul,337654,26.99,3441,101.91,127.49,6144,1956,4189,1,1819.61,579.29,1240.62,227.64,2,5,Q4_maior,mais_cameras_mais_bos
+Sé,Centro,423536,26.67,4179,98.67,156.69,25636,6208,19437,9,6052.85,1465.75,4589.22,961.23,3,1,Q4_maior,mais_cameras_mais_bos
+Santo Amaro,Sul,272332,37.75,2075,76.19,54.97,4818,1868,2950,0,1769.16,685.93,1083.24,127.63,4,6,Q4_maior,mais_cameras_mais_bos
+Lapa,Oeste,338347,40.63,2486,73.47,61.19,7481,2341,5142,2,2211.04,691.89,1519.74,184.13,5,4,Q4_maior,mais_cameras_mais_bos
+Cidade Tiradentes,Leste,194177,14.94,1253,64.53,83.87,1114,685,429,0,573.7,352.77,220.93,74.56,6,24,Q4_maior,mais_cameras_menos_bos
+Mooca,Leste,377163,36.05,1760,46.66,48.82,10286,2662,7631,7,2727.2,705.8,2023.26,285.33,7,3,Q4_maior,mais_cameras_mais_bos
+Butantã,Oeste,468522,56.31,1940,41.41,34.45,4747,2132,2615,0,1013.19,455.05,558.14,84.3,8,8,Q4_maior,mais_cameras_mais_bos
+Itaim Paulista,Leste,345968,21.6,1404,40.58,65.0,2028,1129,899,0,586.18,326.33,259.85,93.89,9,23,Q3,mais_cameras_menos_bos
+Santana/Tucuruvi,Norte,318913,35.78,1123,35.21,31.39,3988,1242,2746,0,1250.5,389.45,861.05,111.46,10,7,Q3,mais_cameras_mais_bos
+Campo Limpo,Sul,675598,36.67,2209,32.7,60.24,6313,4568,1748,3,934.43,676.14,258.73,172.16,11,10,Q3,mais_cameras_mais_bos
+Itaquera,Leste,550540,55.14,1578,28.66,28.62,3686,1775,1912,1,669.52,322.41,347.3,66.85,12,18,Q3,mais_cameras_menos_bos
+Jabaquara,Sul,214958,14.01,549,25.54,39.19,1427,690,737,0,663.85,320.99,342.86,101.86,13,19,Q3,mais_cameras_menos_bos
+Ipiranga,Sul,480878,37.49,1145,23.81,30.54,4594,2104,2492,2,955.34,437.53,518.22,122.54,14,9,Q3,mais_cameras_mais_bos
+Casa Verde/Limão/Cachoeirinha,Norte,306275,27.23,710,23.18,26.07,2576,910,1668,2,841.07,297.12,544.61,94.6,15,12,Q3,mais_cameras_mais_bos
+São Miguel Paulista,Leste,344609,26.16,723,20.98,27.64,2372,1091,1281,0,688.32,316.59,371.73,90.67,16,17,Q3,mais_cameras_menos_bos
+Capela do Socorro,Sul,605383,132.85,1204,19.89,9.06,4782,2036,2747,1,789.91,336.32,453.76,36.0,17,13,Q2,menos_cameras_mais_bos
+Vila Maria/Vila Guilherme,Norte,276069,26.9,548,19.85,20.37,2565,955,1611,1,929.12,345.93,583.55,95.35,18,11,Q2,menos_cameras_mais_bos
+Aricanduva/Formosa/Carrão,Leste,266157,22.33,526,19.76,23.56,1432,661,772,1,538.03,248.35,290.05,64.13,19,26,Q2,menos_cameras_menos_bos
+Penha,Leste,472757,40.44,925,19.57,22.87,3081,1570,1512,1,651.71,332.09,319.83,76.19,20,20,Q2,menos_cameras_menos_bos
+Vila Prudente,Leste,243728,19.2,463,19.0,24.11,1764,993,774,3,723.76,407.42,317.57,91.88,21,16,Q2,menos_cameras_mais_bos
+São Mateus,Leste,453527,45.31,734,16.18,16.2,2673,1613,1060,0,589.38,355.66,233.72,58.99,22,22,Q2,menos_cameras_menos_bos
+Perus/Anhanguera,Norte,163083,56.88,248,15.21,4.36,1024,445,580,1,627.9,272.87,355.65,18.0,23,21,Q2,menos_cameras_menos_bos
+Jaçanã/Tremembé,Norte,283892,65.12,390,13.74,5.99,1230,553,677,0,433.26,194.79,238.47,18.89,24,30,Q2,menos_cameras_menos_bos
+Ermelino Matarazzo,Leste,202214,15.97,277,13.7,17.35,881,493,388,0,435.68,243.8,191.88,55.17,25,29,Q1_menor,menos_cameras_menos_bos
+Parelheiros,Sul,165138,360.5,205,12.41,0.57,581,368,213,0,351.83,222.84,128.98,1.61,26,32,Q1_menor,menos_cameras_menos_bos
+Cidade Ademar,Sul,412804,30.81,412,9.98,13.37,1903,1062,841,0,460.99,257.26,203.73,61.77,27,28,Q1_menor,menos_cameras_menos_bos
+Freguesia/Brasilândia,Norte,380513,31.98,357,9.38,11.16,2159,1101,1058,0,567.39,289.35,278.05,67.51,28,25,Q1_menor,menos_cameras_menos_bos
+Pirituba/Jaraguá,Norte,480218,55.02,446,9.29,8.11,2441,1322,1119,0,508.31,275.29,233.02,44.37,29,27,Q1_menor,menos_cameras_menos_bos
+Guaianases,Leste,273707,17.77,236,8.62,13.28,2133,1197,936,0,779.3,437.33,341.97,120.03,30,14,Q1_menor,menos_cameras_mais_bos
+M'Boi Mirim,Sul,570809,62.41,425,7.45,6.81,4209,2960,1249,0,737.37,518.56,218.81,67.44,31,15,Q1_menor,menos_cameras_mais_bos
+Sapopemba,Leste,266715,13.63,192,7.2,14.09,1025,675,350,0,384.31,253.08,131.23,75.2,32,31,Q1_menor,menos_cameras_menos_bos

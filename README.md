@@ -2,33 +2,61 @@
 
 > Projeto de portfólio em Data Science que constrói e integra dados públicos sobre a expansão do Smart Sampa e sua relação espacial com roubos e furtos de celulares.
 
-**Status:** em desenvolvimento · pipeline SSP-SP + GeoSampa validado com dados oficiais de 2025.
+**Status:** em desenvolvimento · pipeline SSP-SP + GeoSampa validado · primeira EDA comparativa concluída.
 
-## Por que este projeto?
-
-Em vez de partir de um dataset pronto, o projeto reconstrói uma base analítica a partir de fontes públicas heterogêneas. A proposta é demonstrar um fluxo compacto envolvendo **pesquisa e coleta**, **data cleaning**, **SQL**, **análise exploratória**, **geoprocessamento** e, na etapa final, **visualização interativa**.
-
-A pergunta atual é deliberadamente descritiva:
+## Pergunta
 
 > **Como a cobertura do Smart Sampa se distribui pelas subprefeituras de São Paulo e como essa distribuição se relaciona espacialmente com roubos e furtos de celulares?**
 
-O projeto não interpreta associação espacial como efeito causal das câmeras.
+O projeto parte de fontes públicas heterogêneas, em vez de um dataset pronto, e demonstra pesquisa/coleta, ETL, SQL, geoprocessamento, análise exploratória e comunicação de dados.
 
-## Dados e estágio atual
+## Dados integrados
 
 | Base | Cobertura | Status |
 |---|---|---|
-| Câmeras Smart Sampa por subprefeitura | 32 subprefeituras · set/2025 | Integrada |
-| População | Censo 2022 · 32 subprefeituras | Integrada |
-| Área territorial | 2025 · 32 subprefeituras | Integrada |
-| Histórico municipal/regional de câmeras | snapshots 2023–2026 | Integrado |
-| Histórico subprefeitural | Mooca e Itaim Paulista | Parcial |
-| Celulares subtraídos — SSP-SP | fatos de 2025, arquivos 2025+2026 | Pipeline oficial validado |
-| Limites administrativos — GeoSampa | 32 subprefeituras e 96 distritos | Pipeline oficial validado |
+| Smart Sampa por subprefeitura | 32 subprefeituras · set/2025 | Integrada |
+| População | Censo 2022 | Integrada |
+| Área territorial | 2025 | Integrada |
+| SSP-SP — celulares subtraídos | ocorrências de 2025 | Agregada por subprefeitura e distrito |
+| GeoSampa | 32 subprefeituras + 96 distritos | Spatial join validado |
+| Histórico territorial de câmeras | parcial | Próxima frente de pesquisa |
 
-A fotografia das 32 subprefeituras soma **40.000 câmeras**, exatamente o total municipal anunciado para setembro de 2025.
+A fotografia territorial do Smart Sampa soma **40.000 câmeras** em setembro de 2025.
 
-Na SSP-SP, a execução reproduzível identificou **161.145 BOs únicos elegíveis** de roubo/furto de celular ocorridos em 2025. Desses, **133.051 (82,57%)** possuem coordenadas válidas e **132.933 (82,49% do total)** foram atribuídos espacialmente aos polígonos oficiais do GeoSampa. Toda análise territorial é, portanto, rotulada como referente à **parcela geocodificada** da base.
+O ETL da SSP-SP identificou **161.145 BOs únicos elegíveis** de roubo/furto de celular ocorridos em 2025. Desses, **133.051 (82,57%)** possuem coordenadas válidas e **132.933 (82,49%)** foram atribuídos aos polígonos oficiais do GeoSampa. Entre os casos com coordenada válida, o spatial join alcançou **99,91%**.
+
+## Resultado preliminar
+
+Na comparação transversal das 32 subprefeituras, a associação entre **câmeras por 10 mil habitantes** e **BOs geocodificados por 100 mil habitantes** é positiva:
+
+- Pearson: **0,7704**
+- Spearman: **0,7379**
+
+![Câmeras versus BOs geocodificados](reports/figures/cameras_vs_cellphones_percap_2025.svg)
+
+O sinal permanece positivo com outras escalas:
+
+| Comparação | Pearson | Spearman |
+|---|---:|---:|
+| Câmeras absolutas × BOs absolutos | 0,7767 | 0,8248 |
+| Câmeras/10 mil hab. × BOs/100 mil hab. | 0,7704 | 0,7379 |
+| Câmeras/km² × BOs/km² | 0,7644 | 0,8087 |
+| Câmeras/10 mil hab. × roubos/100 mil hab. | 0,8130 | 0,6661 |
+| Câmeras/10 mil hab. × furtos/100 mil hab. | 0,7439 | 0,7460 |
+
+Dividindo as subprefeituras em quartis de cobertura, a mediana de BOs geocodificados por 100 mil habitantes cresce de **484,65** no quartil de menor cobertura para **2.015,32** no de maior cobertura.
+
+![Quartis de cobertura](reports/figures/camera_quartiles_vs_cellphones_2025.svg)
+
+### Interpretação correta
+
+O resultado **não demonstra que câmeras aumentem crimes, sejam ineficazes ou deixem de coibir furtos**. A análise atual é transversal. Uma explicação plausível é seleção/endogeneidade: áreas com maior circulação e criminalidade podem justamente receber mais câmeras.
+
+Uma formulação compatível com os dados é:
+
+> **Não há, nesta análise transversal, evidência de uma associação espacial negativa entre maior cobertura do Smart Sampa e registros de roubo/furto de celulares. O padrão observado é o oposto: territórios com mais câmeras tendem também a concentrar mais BOs geocodificados.**
+
+A análise completa e suas limitações estão em [`docs/preliminary_analysis.md`](docs/preliminary_analysis.md).
 
 ## Arquitetura
 
@@ -39,112 +67,72 @@ flowchart LR
     C --> D[GeoSampa: spatial join]
     D --> E[Agregados mensais]
     E --> F[(SQLite)]
-    F --> G[EDA / GeoPandas]
+    F --> G[EDA]
     G --> H[Mapa interativo]
 ```
 
-Os microdados com endereços e coordenadas ficam fora do Git. O repositório versiona somente agregados territoriais e métricas de qualidade.
+Os microdados com endereços e coordenadas ficam em `data/external/` e não são versionados. O Git contém somente agregados territoriais e métricas de qualidade.
 
-## Estrutura do repositório
+## Estrutura
 
 ```text
 .
-├── .github/workflows/       # testes e construção reproduzível dos agregados
+├── .github/workflows/       # CI e construção reproduzível dos agregados
 ├── data/
-│   ├── raw/                 # dados pequenos versionados + proveniência
-│   ├── external/            # downloads/microdados locais; gitignored
-│   └── processed/           # agregados e tabelas analíticas
-├── database/
-│   ├── schema.sql
-│   └── queries.sql
-├── docs/
-│   ├── methodology.md
-│   └── roadmap.md
+│   ├── raw/                 # fontes pequenas e proveniência
+│   ├── external/            # microdados locais; gitignored
+│   └── processed/           # agregados e datasets analíticos
+├── database/                # schema + consultas SQL
+├── docs/                    # metodologia, análise e roadmap
 ├── notebooks/
-│   └── 01_eda_cameras.ipynb
+│   ├── 01_eda_cameras.ipynb
+│   └── 02_eda_camera_crime.ipynb
+├── reports/figures/
 ├── src/
-│   ├── build_database.py
-│   ├── download_geosampa.py
 │   ├── ingest_ssp_cellphones.py
+│   ├── download_geosampa.py
 │   ├── spatial_join_crimes.py
-│   ├── make_figures.py
-│   └── validate_data.py
-├── tests/
-├── requirements.txt
-└── README.md
+│   ├── build_database.py
+│   └── analyze_camera_crime.py
+└── tests/
 ```
 
-## Pipeline SSP-SP + GeoSampa
-
-O arquivo anual da SSP corresponde ao **ano de registro do BO**, não necessariamente ao ano da ocorrência. Para reconstruir 2025, o pipeline lê os arquivos de 2025 e 2026 e depois filtra `DATA_OCORRENCIA_BO`.
+## Reproduzir
 
 ```bash
-python src/ingest_ssp_cellphones.py \
-  --download-years 2025 2026 \
-  --occurrence-years 2025
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+pytest -q
+python src/build_database.py
+python src/analyze_camera_crime.py
+```
+
+Para reconstruir os agregados diretamente das fontes oficiais:
+
+```bash
+python src/ingest_ssp_cellphones.py --download-years 2025 2026 --occurrence-years 2025
 python src/download_geosampa.py
 python src/spatial_join_crimes.py
 ```
 
-Principais decisões:
+## SQL
 
-- normalização de `S.PAULO` / `São Paulo` / `SAO PAULO`;
-- deduplicação por `NOME_DELEGACIA + ANO_BO + NUM_BO`;
-- manutenção da maior `VERSAO` do BO;
-- contagem por BO único;
-- território definido pela coordenada do fato, não pelo bairro textual ou delegacia;
-- leitura de XLSX grandes com `calamine` e retry para falhas transitórias do endpoint público.
-
-O pipeline produz:
-
-```text
-data/processed/ssp_cellphones_by_subpref_month.csv
-data/processed/ssp_cellphones_by_district_month.csv
-data/processed/ssp_geocoding_quality_month.csv
-```
-
-## SQL no projeto
-
-O SQLite serve como camada funcional de integração, não como complexidade artificial. O schema contém câmeras, território e agregados mensais de criminalidade, além de views para análise descritiva.
-
-`database/queries.sql` demonstra `JOIN`, CTE, ranking e window functions.
-
-## Indicadores
-
-Atualmente são calculados:
-
-- `cameras_por_10_mil_hab_pop2022`;
-- `cameras_por_km2_area2025`.
-
-Na próxima etapa, eles serão cruzados com a quantidade **geocodificada** de celulares subtraídos em 2025 e com indicadores normalizados pela população residente.
+O SQLite funciona como camada real de integração entre território, câmeras e criminalidade. `database/queries.sql` inclui `JOIN`, CTE, rankings e window functions; não foi acrescentado apenas como tecnologia de showcase.
 
 ## Limitações centrais
 
-1. A contagem de câmeras por subprefeitura é uma fotografia de setembro de 2025; não há ainda série mensal completa por território.
-2. Cerca de 17,5% dos BOs elegíveis da SSP não têm coordenadas válidas para o mapa.
-3. População residente é um denominador imperfeito em áreas centrais com grande circulação diária.
+1. A distribuição completa de câmeras é um snapshot de setembro de 2025, não uma série mensal de exposição.
+2. Aproximadamente 17,5% dos BOs elegíveis não têm coordenadas válidas e ficam fora da análise territorial.
+3. População residente é denominador imperfeito em áreas de grande circulação diária, como Sé e Pinheiros.
 4. A alocação de câmeras é endógena: áreas com mais crimes podem receber mais monitoramento.
-5. A rede inclui câmeras privadas integradas e seu estoque pode variar.
+5. O sistema inclui câmeras privadas integradas, cujo estoque pode variar.
+6. BOs representam registros policiais, não necessariamente toda a incidência real.
 
-Assim, a análise atual trata **distribuição e associação espacial**, não eficácia causal do Smart Sampa.
+## Próximo passo
 
-## Fontes principais
-
-- Metrópoles — câmeras por subprefeitura em setembro/2025, a partir de resposta via LAI.
-- Prefeitura de São Paulo / SMUL-GEOINFO / IBGE — população e áreas territoriais.
-- Prefeitura de São Paulo / Smart Sampa e Participa+ — snapshots da expansão da rede.
-- SSP-SP — microdados anuais de celulares subtraídos.
-- GeoSampa — limites oficiais de subprefeituras e distritos via WFS.
-
-URLs e datas de acesso estão versionadas em `data/raw/sources.csv`.
-
-## Próximos passos
-
-1. versionar os agregados oficiais de 2025 no `main`;
-2. produzir o dataset analítico Smart Sampa × criminalidade por subprefeitura;
-3. fazer a EDA comparativa;
-4. construir a visualização interativa para GitHub Pages;
-5. avaliar se uma LAI para série histórica territorial das câmeras justifica uma segunda etapa longitudinal.
+O próximo produto será o **mapa interativo refinado para GitHub Pages**, inspirado na lógica de exploração territorial do Mapa da Desigualdade. Em paralelo, o projeto continuará buscando uma série `subprefeitura × mês × câmeras ativas`; somente com essa exposição temporal será razoável avançar para um desenho longitudinal sobre deterrência.
 
 ## Licença
 

@@ -68,3 +68,47 @@ SELECT
     ) AS participacao_acumulada_pct
 FROM vw_subpref_cameras_2025_09
 ORDER BY cameras_2025_09 DESC;
+
+-- 11) Ranking anual de subtrações de celulares por subprefeitura em 2025.
+SELECT
+    subprefeitura,
+    celulares_subtraidos_2025,
+    roubos_2025,
+    furtos_2025,
+    celulares_subtraidos_por_100_mil_pop2022
+FROM vw_crime_subpref_2025
+ORDER BY celulares_subtraidos_2025 DESC;
+
+-- 12) Comparação transversal Smart Sampa × celulares subtraídos.
+-- Snapshot de câmeras: setembro/2025; ocorrências: total do ano de 2025.
+-- Uso exploratório: não interpretar como efeito causal.
+SELECT
+    subprefeitura,
+    cameras_2025_09,
+    cameras_por_10_mil_hab_pop2022,
+    celulares_subtraidos_2025,
+    celulares_subtraidos_por_100_mil_pop2022
+FROM vw_camera_crime_subpref_2025
+WHERE celulares_subtraidos_2025 IS NOT NULL
+ORDER BY celulares_subtraidos_por_100_mil_pop2022 DESC;
+
+-- 13) CTE + window functions: contraste entre ranking de vigilância e criminalidade.
+WITH rankings AS (
+    SELECT
+        subprefeitura,
+        cameras_por_10_mil_hab_pop2022,
+        celulares_subtraidos_por_100_mil_pop2022,
+        RANK() OVER (ORDER BY cameras_por_10_mil_hab_pop2022 DESC) AS rank_cameras,
+        RANK() OVER (ORDER BY celulares_subtraidos_por_100_mil_pop2022 DESC) AS rank_crime
+    FROM vw_camera_crime_subpref_2025
+    WHERE celulares_subtraidos_por_100_mil_pop2022 IS NOT NULL
+)
+SELECT
+    subprefeitura,
+    cameras_por_10_mil_hab_pop2022,
+    celulares_subtraidos_por_100_mil_pop2022,
+    rank_cameras,
+    rank_crime,
+    rank_cameras - rank_crime AS diferenca_rank
+FROM rankings
+ORDER BY ABS(rank_cameras - rank_crime) DESC;

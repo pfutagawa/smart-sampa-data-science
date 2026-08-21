@@ -50,6 +50,30 @@ CREATE TABLE camera_city_snapshots (
   notes TEXT
 );
 
+CREATE TABLE crime_subpref_month (
+  crime_id INTEGER PRIMARY KEY,
+  subprefeitura_id INTEGER NOT NULL REFERENCES subprefeituras(subprefeitura_id),
+  occurrence_year INTEGER NOT NULL,
+  occurrence_month INTEGER NOT NULL CHECK(occurrence_month BETWEEN 1 AND 12),
+  cellphone_subtractions_total INTEGER NOT NULL CHECK(cellphone_subtractions_total >= 0),
+  robberies INTEGER NOT NULL CHECK(robberies >= 0),
+  thefts INTEGER NOT NULL CHECK(thefts >= 0),
+  source_id INTEGER NOT NULL REFERENCES sources(source_id),
+  UNIQUE(subprefeitura_id, occurrence_year, occurrence_month, source_id)
+);
+
+CREATE TABLE crime_district_month (
+  crime_id INTEGER PRIMARY KEY,
+  district_name TEXT NOT NULL,
+  occurrence_year INTEGER NOT NULL,
+  occurrence_month INTEGER NOT NULL CHECK(occurrence_month BETWEEN 1 AND 12),
+  cellphone_subtractions_total INTEGER NOT NULL CHECK(cellphone_subtractions_total >= 0),
+  robberies INTEGER NOT NULL CHECK(robberies >= 0),
+  thefts INTEGER NOT NULL CHECK(thefts >= 0),
+  source_id INTEGER NOT NULL REFERENCES sources(source_id),
+  UNIQUE(district_name, occurrence_year, occurrence_month, source_id)
+);
+
 CREATE TABLE dataset_registry (
   dataset_id INTEGER PRIMARY KEY,
   dataset_name TEXT NOT NULL,
@@ -86,3 +110,35 @@ SELECT
   cs.notes
 FROM camera_subpref_snapshots cs
 JOIN subprefeituras s ON s.subprefeitura_id = cs.subprefeitura_id;
+
+CREATE VIEW vw_crime_subpref_2025 AS
+SELECT
+  s.nome AS subprefeitura,
+  SUM(c.cellphone_subtractions_total) AS celulares_subtraidos_2025,
+  SUM(c.robberies) AS roubos_2025,
+  SUM(c.thefts) AS furtos_2025,
+  ROUND(SUM(c.cellphone_subtractions_total) * 100000.0 / s.populacao_2022, 2)
+    AS celulares_subtraidos_por_100_mil_pop2022
+FROM crime_subpref_month c
+JOIN subprefeituras s ON s.subprefeitura_id = c.subprefeitura_id
+WHERE c.occurrence_year = 2025
+GROUP BY s.subprefeitura_id, s.nome, s.populacao_2022;
+
+-- Comparação transversal: câmeras (snapshot set/2025) versus ocorrências no ano de 2025.
+-- Esta view é descritiva e não estima efeito causal do Smart Sampa.
+CREATE VIEW vw_camera_crime_subpref_2025 AS
+SELECT
+  cam.subprefeitura,
+  cam.regiao_administrativa,
+  cam.populacao_2022,
+  cam.area_km2,
+  cam.cameras_2025_09,
+  cam.cameras_por_10_mil_hab_pop2022,
+  cam.cameras_por_km2_area2025,
+  crime.celulares_subtraidos_2025,
+  crime.roubos_2025,
+  crime.furtos_2025,
+  crime.celulares_subtraidos_por_100_mil_pop2022
+FROM vw_subpref_cameras_2025_09 cam
+LEFT JOIN vw_crime_subpref_2025 crime
+  ON crime.subprefeitura = cam.subprefeitura;

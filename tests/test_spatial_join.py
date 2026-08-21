@@ -2,10 +2,11 @@ from pathlib import Path
 import sys
 
 import geopandas as gpd
+import pandas as pd
 from shapely.geometry import Polygon
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from spatial_join_crimes import join_boundaries, aggregate
+from spatial_join_crimes import join_boundaries, aggregate, geocoding_quality
 
 
 def test_spatial_join_and_aggregation(tmp_path):
@@ -47,3 +48,17 @@ def test_spatial_join_and_aggregation(tmp_path):
     assert int(by_sub.iloc[0]["roubos"]) == 1
     assert int(by_sub.iloc[0]["furtos"]) == 1
     assert int(by_dist.iloc[0]["subtracoes_total"]) == 2
+
+    all_events = pd.DataFrame({
+        "BO_KEY": ["a", "b", "c"],
+        "ano_ocorrencia": [2025, 2025, 2025],
+        "mes_ocorrencia": [1, 1, 1],
+        "tem_coordenada_valida": [True, True, False],
+    })
+    quality = geocoding_quality(all_events, joined)
+    row = quality.iloc[0]
+    assert int(row["bos_elegiveis"]) == 3
+    assert int(row["bos_coordenada_valida"]) == 2
+    assert int(row["bos_atribuidos_subprefeitura"]) == 2
+    assert float(row["pct_coordenada_valida"]) == 66.67
+    assert float(row["pct_atribuido_subprefeitura_com_coord"]) == 100.0

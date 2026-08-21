@@ -1,0 +1,73 @@
+name: build crime aggregates
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/build-crime-data.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download and transform SSP-SP
+        run: |
+          python src/ingest_ssp_cellphones.py \
+            --download-years 2025 2026 \
+            --occurrence-years 2025
+
+      - name: Download GeoSampa boundaries
+        run: python src/download_geosampa.py
+
+      - name: Spatial join and aggregate
+        run: python src/spatial_join_crimes.py
+
+      - name: Check aggregate outputs
+        run: |
+          python - <<'PY'
+          import pandas as pd
+          from pathlib import Path
+
+          files = [
+              Path('data/processed/ssp_cellphones_by_subpref_month.csv'),
+              Path('data/processed/ssp_cellphones_by_district_month.csv'),
+          ]
+          for path in files:
+              if not path.exists():
+                  raise SystemExit(f'Missing output: {path}')
+              df = pd.read_csv(path)
+              if df.empty:
+                  raise SystemExit(f'Empty output: {path}')
+              print(path, df.shape, int(df['subtracoes_total'].sum()))
+          PY
+
+      - name: Commit aggregated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            data/processed/ssp_cellphones_by_subpref_month.csv \
+            data/processed/ssp_cellphones_by_district_month.csv
+          if git diff --cached --quiet; then
+            echo "No aggregate changes to commit."
+          else
+            git commit -m "data: refresh 2025 cellphone crime aggregates"
+            git push
+          fi

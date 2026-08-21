@@ -92,7 +92,14 @@ def registration_year_from_name(path: Path) -> int | None:
 def load_xlsx(path: Path) -> pd.DataFrame:
     year = registration_year_from_name(path)
     sheet = f"CELULAR_{year}" if year else 0
-    df = pd.read_excel(path, sheet_name=sheet, usecols=lambda c: str(c).upper() in USECOLS)
+    # Calamine reads large XLSX files substantially faster than openpyxl while
+    # preserving the same tabular values needed by this ETL.
+    df = pd.read_excel(
+        path,
+        sheet_name=sheet,
+        usecols=lambda c: str(c).upper() in USECOLS,
+        engine="calamine",
+    )
     df.columns = [str(c).strip().upper() for c in df.columns]
     missing = [c for c in USECOLS if c not in df.columns]
     if missing:

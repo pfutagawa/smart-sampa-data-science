@@ -18,6 +18,9 @@ def test_schema_and_geo_name_normalization():
     assert "vw_camera_crime_subpref_2025" in objects
     assert build_database.norm_geo_key("Sé") == "SE"
     assert build_database.norm_geo_key("  M'Boi   Mirim ") == "M'BOI MIRIM"
+    assert build_database.norm_geo_key("Casa Verde/Cachoeirinha") == "CASA VERDE/LIMAO/CACHOEIRINHA"
+    assert build_database.norm_geo_key("São Miguel") == "SAO MIGUEL PAULISTA"
+    assert build_database.norm_geo_key("Perus") == "PERUS/ANHANGUERA"
     con.close()
 
 

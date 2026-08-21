@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Large/raw external downloads (do not commit SSP microdata)
+data/external/
+data/raw/ssp_*.xlsx
+data/raw/ssp_*.csv
+
+# Local database journals
+*.sqlite-journal

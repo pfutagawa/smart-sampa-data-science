@@ -4,15 +4,13 @@
 
 A etapa inicial descreve **como a cobertura do Smart Sampa se distribui pelas 32 subprefeituras de São Paulo**, porque essa é a fotografia territorial mais completa encontrada publicamente para as câmeras (setembro de 2025).
 
-Os microdados da SSP-SP, porém, incluem latitude e longitude do local do fato. Por isso, a criminalidade pode ser atribuída espacialmente tanto às **subprefeituras** quanto aos **96 distritos municipais** por meio dos limites oficiais do GeoSampa.
-
-O campo `BAIRRO` da SSP não é usado como chave administrativa: nomes de bairros são informais, podem variar e não correspondem necessariamente aos limites oficiais. A unidade territorial é atribuída pelas coordenadas do fato através de *spatial join*.
+Os microdados da SSP-SP incluem latitude e longitude do local do fato. A criminalidade pode, portanto, ser atribuída espacialmente às **32 subprefeituras** e aos **96 distritos municipais** por meio dos limites oficiais do GeoSampa. O campo `BAIRRO` da SSP não é usado como chave administrativa.
 
 ## 2. Smart Sampa
 
 A contagem de câmeras representa um **estoque dinâmico de equipamentos conectados**, e não um acumulado monotônico de instalações. Câmeras privadas integradas podem entrar ou sair do sistema.
 
-A fotografia completa das 32 subprefeituras em setembro de 2025 soma **40.000 câmeras**, exatamente o total municipal divulgado oficialmente para o mesmo período, funcionando como validação cruzada.
+A fotografia completa das 32 subprefeituras em setembro de 2025 soma **40.000 câmeras**, exatamente o total municipal divulgado oficialmente para o mesmo período.
 
 ### Indicadores atuais
 
@@ -20,76 +18,70 @@ A fotografia completa das 32 subprefeituras em setembro de 2025 soma **40.000 c�
 
 `câmeras em setembro/2025 ÷ população do Censo 2022 × 10.000`
 
-O denominador não é contemporâneo à contagem de câmeras; o nome da variável registra explicitamente essa diferença temporal.
-
 **Câmeras por km²**
 
 `câmeras em setembro/2025 ÷ área oficial da subprefeitura em 2025`
 
-Este indicador mede densidade espacial, mas não controla população flutuante, uso comercial do solo, concentração de câmeras privadas ou critérios operacionais de implantação.
+A população residente é um denominador imperfeito especialmente em áreas centrais, que concentram grande população flutuante, comércio e turismo.
 
 ## 3. SSP-SP — celulares subtraídos
 
-A SSP-SP disponibiliza arquivos anuais de celulares subtraídos. O esquema observado contém, entre outros, os campos:
-
-- `NOME_DELEGACIA`, `ANO_BO`, `NUM_BO` e `VERSAO`;
-- `DATA_OCORRENCIA_BO`;
-- `RUBRICA`;
-- `CIDADE`, `BAIRRO`, `LOGRADOURO` e `NUMERO_LOGRADOURO`;
-- `LATITUDE` e `LONGITUDE`.
+O esquema observado contém, entre outros, `NOME_DELEGACIA`, `ANO_BO`, `NUM_BO`, `VERSAO`, `DATA_OCORRENCIA_BO`, `RUBRICA`, endereço e coordenadas.
 
 ### Regra temporal
 
-O ano no nome do XLSX corresponde ao **ano de registro do BO**, não necessariamente ao ano do fato. Há ocorrências de dezembro registradas em janeiro do ano seguinte.
+O ano no nome do XLSX corresponde ao **ano de registro do BO**, não necessariamente ao ano do fato. Para reconstruir 2025, o pipeline lê os arquivos de registro de 2025 e 2026 e só depois filtra `DATA_OCORRENCIA_BO` para 2025.
 
-Por isso, para analisar o ano `t`, o pipeline pode ler também o arquivo de `t+1` e só então filtrar por `DATA_OCORRENCIA_BO`. Exemplo para 2025:
+### Município e deduplicação
 
-```bash
-python src/ingest_ssp_cellphones.py \
-  --download-years 2025 2026 \
-  --occurrence-years 2025
-```
-
-### Município
-
-A SSP usa variantes como `S.PAULO`, `São Paulo` e `SAO PAULO`. O ETL normaliza esses valores antes do filtro para evitar exclusão silenciosa de ocorrências da capital.
-
-### Deduplicação
-
-A chave de BO utilizada é:
+O ETL normaliza variantes como `S.PAULO`, `São Paulo` e `SAO PAULO`. A chave utilizada é:
 
 `NOME_DELEGACIA + ANO_BO + NUM_BO`
 
-Como um mesmo BO pode aparecer em versões diferentes, o pipeline mantém primeiro a maior `VERSAO`. Depois reduz o BO a uma única observação analítica e registra se a rubrica contém roubo, furto ou ambos.
+Quando há mais de uma versão do mesmo BO, mantém-se a maior `VERSAO`. A unidade de contagem é o **BO único**, não a linha da planilha nem o número de objetos listados.
 
-A contagem final é feita por **BO único**, não por linha da planilha nem por objeto listado.
+Os campos `roubos` e `furtos` nos agregados indicam presença da respectiva rubrica. Em 2025, 39 BOs espacialmente atribuídos possuem ambas; portanto essas duas colunas não devem ser somadas para reconstruir `subtracoes_total`.
 
-## 4. Coordenadas e associação territorial
+## 4. Coordenadas, GeoSampa e cobertura espacial
 
-Latitude e longitude são convertidas para valores numéricos e submetidas a uma validação geográfica básica para a região de São Paulo. Registros sem coordenadas válidas permanecem fora do *spatial join* e a taxa de cobertura deve ser reportada na análise.
+Latitude e longitude são convertidas para valores numéricos e validadas para a região de São Paulo. Os limites administrativos vêm diretamente do WFS oficial do GeoSampa:
 
-Os limites administrativos são obtidos diretamente do WFS oficial do GeoSampa:
+- `geoportal:subprefeitura` — 32 feições;
+- `geoportal:distrito_municipal` — 96 feições.
 
-- `geoportal:subprefeitura`;
-- `geoportal:distrito_municipal`.
+O `spatial join` usa o predicado `within`. Diferenças de pontuação entre nomes territoriais (hífen, barra e apóstrofo) são normalizadas; diferenças semânticas permanecem em um pequeno de-para explícito.
 
-O script `src/download_geosampa.py` baixa as duas camadas e as converte para EPSG:4326. Em seguida, `src/spatial_join_crimes.py` atribui cada ocorrência georreferenciada aos polígonos por relação espacial `within`.
+### Cobertura observada em 2025
 
-O pipeline gera agregados mensais por:
+A execução reproduzível com os arquivos oficiais encontrou:
 
-- subprefeitura;
-- distrito.
+- **161.145 BOs únicos elegíveis** de roubo/furto de celular;
+- **133.051 com coordenadas válidas** — 82,57%;
+- **132.933 atribuídos a subprefeitura e distrito** — 82,49% de todos os BOs elegíveis e 99,91% dos casos com coordenadas válidas.
 
-Antes de qualquer interpretação, devem ser verificadas a porcentagem de BOs com coordenadas válidas e a taxa de sucesso dos dois *spatial joins*.
+A cobertura de coordenadas permaneceu relativamente estável nos 12 meses, entre **81,85% e 83,35%**. O arquivo `data/processed/ssp_geocoding_quality_month.csv` preserva essas métricas mês a mês.
 
-## 5. Minimização e versionamento dos dados
+Por isso, mapas e taxas territoriais são descritos como referentes à **parcela geocodificada** dos registros, não à totalidade da criminalidade registrada.
+
+## 5. Minimização e versionamento
 
 Os XLSX originais da SSP e os intermediários em nível de ocorrência, que contêm coordenadas e endereços, ficam em `data/external/` e são ignorados pelo Git.
 
-O repositório deve versionar apenas os **agregados territoriais necessários à análise**, reduzindo volume e evitando redistribuição desnecessária de microdados localizáveis.
+O repositório versiona apenas:
 
-## 6. Inferência
+- agregados mensais por subprefeitura;
+- agregados mensais por distrito;
+- métricas agregadas de qualidade da geocodificação.
 
-Nesta fase, o projeto é **descritivo e associativo**. Diferenças entre cobertura de câmeras e criminalidade não serão apresentadas como efeito causal do Smart Sampa.
+## 6. Limites da comparação Smart Sampa × criminalidade
 
-Uma eventual análise antes/depois ou painel temporal deverá discutir explicitamente endogeneidade: regiões com mais crimes podem receber mais câmeras, e outros fatores podem afetar simultaneamente implantação e registros criminais.
+A contagem de câmeras é uma fotografia de setembro de 2025, enquanto os crimes representam o ano de 2025. A comparação é **descritiva e associativa**, adequada para explorar coincidência espacial e alocação territorial, mas não para estimar o efeito causal das câmeras.
+
+Entre os principais fatores de confusão estão:
+
+- câmeras podem ser instaladas justamente onde há mais crimes;
+- o estoque inclui câmeras privadas integradas;
+- população residente não mede exposição diária ao risco em áreas de grande circulação;
+- cerca de 17,5% dos BOs elegíveis não entram na análise espacial por falta de coordenadas válidas.
+
+Uma análise longitudinal ou causal só deve ser considerada se obtivermos uma série histórica territorial confiável da implantação das câmeras.

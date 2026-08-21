@@ -1,0 +1,13 @@
+{
+  "camera_subpref_2025_09_rows": 32,
+  "camera_subpref_2025_09_sum": 40000,
+  "population_2022_rows": 32,
+  "population_2022_sum": 11451999,
+  "area_2025_rows": 32,
+  "all_subprefecture_keys_match": true,
+  "expected_city_camera_total_2025_09": 40000,
+  "camera_total_validation_ok": true,
+  "expected_population_2022_total": 11451999,
+  "population_total_validation_ok": true,
+  "important_note": "Smart Sampa regional buckets should not yet be joined to administrative regions; aggregated subprefecture counts do not reconcile to reported regional totals."
+}
